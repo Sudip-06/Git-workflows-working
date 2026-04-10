@@ -1,78 +1,127 @@
-# 🎓 Placement Portal Application (PPA)
+# Placement Portal Application (PPA)
 
-A full-stack campus recruitment platform built with **Flask + Vue 3 + SQLite + Redis + Celery**.
+Placement Portal Application is a full-stack campus recruitment system built with Flask, Vue 3, SQLite, Redis, and Celery.
 
----
+## Tech stack
 
-## 📋 Tech Stack
+- Backend: Flask, Flask-JWT-Extended, SQLAlchemy
+- Frontend: Vue 3, Vue Router, Bootstrap 5
+- Database: SQLite
+- Cache and broker: Redis
+- Background jobs: Celery + Celery Beat
+- Notifications: In-app notifications, Gmail SMTP, Google Chat webhook, optional Twilio SMS
 
-| Layer | Technology |
-|-------|-----------|
-| Backend API | Flask 3.x + Flask-JWT-Extended |
-| Frontend | Vue 3 (CDN, no CLI needed) + Vue Router 4 |
-| Styling | Bootstrap 5.3 + Bootstrap Icons |
-| Charts | Chart.js 4 |
-| Database | SQLite (programmatically created) |
-| Cache | Redis + Flask-Caching |
-| Async Jobs | Celery + Redis |
-| Auth | JWT tokens |
+## Included files
 
----
+- `run.py` — Flask app entry point
+- `celery_worker.py` — Celery worker/beat entry point
+- `config.py` — configuration
+- `requirements.txt` — Python dependencies
+- `openapi.yaml` — API definition YAML file
+- `app/` — backend modules
+- `static/js/app.js` — frontend SPA
+- `templates/index.html` — Vue entry page
+- `placement_portal.db` — SQLite database file
+- `.env.example` — example environment file
 
-## 🚀 Quick Start
+## How to run
 
-### 1. Prerequisites
+### 1. Create virtual environment
 
 ```bash
-# Ensure these are installed:
-python >= 3.10
-redis-server
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-### 2. Install Dependencies
+### 2. Install dependencies
 
 ```bash
-cd placement-portal
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 3. Start Redis
+### 3. Fresh database recommended after this update
+
+This optimized build adds database indexes and the `delivery_logs` table.
+If you are updating an older copy of the project, either:
 
 ```bash
-# Linux/Mac
-redis-server
-
-# Windows (WSL or Redis for Windows)
-redis-server --daemonize yes
+rm -f placement_portal.db
 ```
 
-### 4. Run Flask Backend
+then restart the app so SQLAlchemy can recreate the database, or create the missing table/indexes manually.
+
+### 3. Configure environment variables
+
+Create `.env` in the project root by copying `.env.example`.
+
+```bash
+cp .env.example .env
+```
+
+Then update values such as:
+- `SECRET_KEY`
+- `JWT_SECRET_KEY`
+- `REDIS_URL`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
+- `MAIL_DEFAULT_SENDER`
+- `GCHAT_WEBHOOK_URL`
+- `REMINDER_TIME`
+
+### 4. Start Redis
+
+On WSL/Linux:
+
+```bash
+sudo service redis-server start
+redis-cli ping
+```
+
+Expected result:
+
+```bash
+PONG
+```
+
+### 5. Run Flask app
 
 ```bash
 python run.py
-# Server starts at http://localhost:5000
-# Admin is auto-seeded: admin@ppa.edu / Admin@123
 ```
 
-### 5. Start Celery Worker (for async jobs)
+The app runs at:
+
+```text
+http://localhost:5000
+```
+
+Default seeded admin:
+
+```text
+admin@ppa.edu / Admin@123
+```
+
+### 6. Run Celery worker
+
+Open a second terminal:
 
 ```bash
-# In a separate terminal:
+source venv/bin/activate
 celery -A celery_worker.celery worker --loglevel=info
 ```
 
-### 6. Start Celery Beat (for scheduled jobs)
+### 7. Run Celery Beat
+
+Open a third terminal:
 
 ```bash
-# In a third terminal:
+source venv/bin/activate
 celery -A celery_worker.celery beat --loglevel=info
 ```
 
-### 7. Open the App
 
-Visit `http://localhost:5000` in your browser.
 
----
 
 ## 👤 Demo Accounts
 
@@ -176,35 +225,7 @@ placement-portal/
 
 ---
 
-## 🔑 Key API Endpoints
 
-```
-POST /api/auth/login
-POST /api/auth/register
-GET  /api/auth/me
-
-GET  /api/admin/dashboard
-GET  /api/admin/companies
-PUT  /api/admin/companies/:id/status
-GET  /api/admin/students
-PUT  /api/admin/students/:id/status
-GET  /api/admin/drives
-PUT  /api/admin/drives/:id/status
-
-GET  /api/company/dashboard
-GET  /api/company/profile
-POST /api/company/drives
-GET  /api/company/drives/:id/applicants
-PUT  /api/company/applications/:id
-POST /api/company/drives/:id/slots
-POST /api/company/applications/:id/offer-letter
-
-GET  /api/student/drives
-POST /api/student/drives/:id/apply
-GET  /api/student/applications
-GET  /api/student/recommendations
-POST /api/student/export/csv
-```
 
 ---
 
@@ -226,9 +247,44 @@ MAIL_PASSWORD=your-app-password
 
 ---
 
-## 📌 Notes
+## Main API endpoints
 
-- The database (`placement_portal.db`) is auto-created on first run via SQLAlchemy `db.create_all()`
-- No manual DB creation (DB Browser etc.) is used — fulfills the project requirement
-- All file uploads stored in `static/uploads/`
-- Vue 3 SPA loaded via single Jinja2 template (`templates/index.html`) — CDN only, no CLI
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+
+### Student
+- `GET /api/student/drives`
+- `GET /api/student/drives/<id>`
+- `POST /api/student/drives/<id>/apply`
+- `GET /api/student/applications`
+- `POST /api/student/applications/<id>/book-slot`
+- `GET /api/student/recommendations`
+
+### Company
+- `GET /api/company/dashboard`
+- `GET /api/company/drives`
+- `POST /api/company/drives`
+- `GET /api/company/drives/<id>/applicants`
+- `POST /api/company/drives/<id>/slots`
+- `PUT /api/company/applications/<id>`
+
+### Admin
+- `GET /api/admin/dashboard`
+- `GET /api/admin/students`
+- `GET /api/admin/companies`
+- `GET /api/admin/drives`
+- `PUT /api/admin/drives/<id>/status`
+
+
+
+## Submission note
+
+For final submission, zip the full project folder containing:
+- this PDF report
+- code folder with all files
+- `README.md`
+- `api.yaml`
+
+
