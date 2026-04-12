@@ -1,45 +1,30 @@
-
-            <!-- BOOKED STATE: hide all other slots, show only the booked one with meeting link -->
-            <div v-if="myApplication && myApplication.status === 'interview_scheduled' && myApplication.interview_slot">
-              <div class="alert alert-success border-0">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                  <i class="bi bi-check-circle-fill fs-5"></i>
-                  <span class="fw-bold">Interview Slot Confirmed!</span>
+            <!-- Slot booking status banner -->
+            <div v-if="a.interview_slot" class="p-2 rounded mb-2" style="background:#eff6ff;border:1px solid #93c5fd">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-calendar-check text-primary"></i>
+                <strong class="small">{{fmtDateTime(a.interview_slot.slot_datetime)}}</strong>
+                <span class="badge" :class="a.interview_slot.mode==='online'?'bg-primary':'bg-secondary'" style="font-size:.65rem">{{a.interview_slot.mode}}</span>
+              </div>
+              <div v-if="a.interview_slot.venue_or_link" class="small">
+                <div class="d-flex align-items-center gap-1 mb-1">
+                  <i class="bi bi-check-circle-fill text-success"></i>
+                  <span class="text-success fw-semibold">Student has booked this slot</span>
                 </div>
-                <div class="mb-1">
-                  <i class="bi bi-clock me-1"></i>
-                  <strong>{{fmtDateTime(myApplication.interview_slot.slot_datetime)}}</strong>
-                </div>
-                <div class="mb-2">
-                  <span class="badge" :class="myApplication.interview_slot.mode==='online'?'bg-primary':'bg-secondary'">
-                    {{myApplication.interview_slot.mode}}
-                  </span>
-                </div>
-                <div v-if="myApplication.interview_slot.venue_or_link && !isSlotExpired(myApplication.interview_slot.slot_datetime)">
-                  <div v-if="myApplication.interview_slot.mode === 'online'">
-                    <div class="small text-muted mb-1 fw-semibold">Meeting Link:</div>
-                    <a :href="myApplication.interview_slot.venue_or_link" target="_blank"
-                      class="btn btn-primary w-100 mb-1">
-                      <i class="bi bi-camera-video me-2"></i>Join Meeting Now
-                    </a>
-                    <div class="small text-muted text-break">{{myApplication.interview_slot.venue_or_link}}</div>
-                  </div>
-                  <div v-else>
-                    <div class="small text-muted fw-semibold">Venue:</div>
-                    <div class="fw-semibold"><i class="bi bi-building me-1"></i>{{myApplication.interview_slot.venue_or_link}}</div>
-                  </div>
-                </div>
-                <div v-else class="small mt-1">
-                  <span v-if="myApplication && isSlotExpired(myApplication.interview_slot.slot_datetime)"
-                    class="text-danger fw-semibold d-block">
-                    <i class="bi bi-clock-history me-1"></i>⏱ Meeting time has passed — link expired.
-                  </span>
-                  <span v-else class="text-muted">
-                    <i class="bi bi-hourglass-split me-1"></i>Meeting link / venue will be shared by the recruiter soon.
-                  </span>
+                <a v-if="a.interview_slot.mode==='online'"
+                  :href="a.interview_slot.venue_or_link" target="_blank"
+                  class="btn btn-sm btn-success w-100 mt-1">
+                  <i class="bi bi-camera-video me-1"></i>Join Meeting Now
+                </a>
+                <div v-else class="mt-1" style="font-size:.72rem">
+                  <i class="bi bi-building me-1"></i>
+                  <strong>Venue:</strong> {{a.interview_slot.venue_or_link}}
                 </div>
               </div>
-              <p class="small text-muted text-center">
-                <i class="bi bi-info-circle me-1"></i>Other available slots are hidden once you book.
-              </p>
+              <div v-else class="small text-danger fw-semibold">
+                <i class="bi bi-clock-history me-1"></i>
+                ⏱ Meeting time has passed — link expired.
+              </div>
+            </div>
+            <div v-else class="alert alert-warning py-1 small mb-2">
+              <i class="bi bi-calendar-x me-1"></i>No slot booked yet — student will pick one from the drive page
             </div>
