@@ -5,7 +5,7 @@
                 <strong class="small">{{fmtDateTime(a.interview_slot.slot_datetime)}}</strong>
                 <span class="badge" :class="a.interview_slot.mode==='online'?'bg-primary':'bg-secondary'" style="font-size:.65rem">{{a.interview_slot.mode}}</span>
               </div>
-              <div v-if="a.interview_slot.venue_or_link" class="small">
+              <div v-if="a.interview_slot.venue_or_link && !isSlotExpired(a.interview_slot.slot_datetime)" class="small">
                 <div class="d-flex align-items-center gap-1 mb-1">
                   <i class="bi bi-check-circle-fill text-success"></i>
                   <span class="text-success fw-semibold">Student has booked this slot</span>
@@ -20,9 +20,14 @@
                   <strong>Venue:</strong> {{a.interview_slot.venue_or_link}}
                 </div>
               </div>
-              <div v-else class="small text-danger fw-semibold">
-                <i class="bi bi-clock-history me-1"></i>
-                ⏱ Meeting time has passed — link expired.
+              <div v-else class="small">
+                <span v-if="isSlotExpired(a.interview_slot.slot_datetime)"
+                  class="text-danger fw-semibold">
+                  <i class="bi bi-clock-history me-1"></i>⏱ Meeting time has passed — link expired.
+                </span>
+                <span v-else class="text-muted">
+                  <i class="bi bi-hourglass-split me-1"></i>Awaiting student to select a slot
+                </span>
               </div>
             </div>
             <div v-else class="alert alert-warning py-1 small mb-2">
