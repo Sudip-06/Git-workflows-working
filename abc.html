@@ -12,7 +12,7 @@
                 <span class="badge" :class="a.interview_slot.mode==='online'?'bg-primary':'bg-secondary'">
                   {{a.interview_slot.mode}}
                 </span>
-                <div v-if="a.interview_slot.venue_or_link" class="mt-2">
+                <div v-if="a.interview_slot.venue_or_link && !isSlotExpired(a.interview_slot.slot_datetime)" class="mt-2">
                   <div v-if="a.interview_slot.mode==='online'">
                     <a :href="a.interview_slot.venue_or_link"
                       target="_blank" class="btn btn-sm btn-primary">
@@ -25,12 +25,12 @@
                   </div>
                 </div>
                 <div v-else class="small mt-2">
-                  <span v-if="new Date(a.interview_slot.slot_datetime) < new Date()"
-                    class="text-danger fw-semibold">
+                  <span v-if="isSlotExpired(a.interview_slot.slot_datetime)"
+                    class="text-danger fw-semibold d-block">
                     <i class="bi bi-clock-history me-1"></i>⏱ Meeting time has passed — link expired.
                   </span>
                   <span v-else class="text-muted">
-                    <i class="bi bi-hourglass-split me-1"></i>Meeting link / venue will be shared by the recruiter soon.
+                    <i class="bi bi-hourglass-split me-1"></i>Meeting link will be shared soon by the recruiter.
                   </span>
                 </div>
               </div>
